@@ -18,8 +18,8 @@ lookUpData = { "Manhattan":"Manhattan" ,"Staten Island":"Staten Island", "Queens
 # open the Uber data
 uberData = csv.DictReader(open(args.uberData), delimiter=',')
 
-# print the header of the output csv
-print("Pickup_year,Pickup_time,Pickup_borough")
+# The header of the output csv is
+# Pickup_year,Pickup_time,Pickup_borough
 
 # go through the input
 for row in uberData:
