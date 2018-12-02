@@ -9,25 +9,15 @@ import requests
 
 
 conf = SparkConf()
-conf.setAppName("Taxi_vs_Uber")
+conf.setAppName("Residential_Analysis")
 # create spark context with the above configuration
 sc = SparkContext(conf=conf)
 sc.setLogLevel("ERROR")
 # Create an sql context so that we can query data files in sql like syntax
 sqlContext = SQLContext (sc)
 # read the csv file
-uberFile = sc.textFile("file:///app/uber_clean_sample.csv")
-taxiFile = sc.textFile("file:///app/taxi_clean_sample.csv")
-
-# remove the header from UberFile
-uberHeader = uberFile.filter(lambda line: "Pickup_time" in line)
-uberFileWithNoHeader = uberFile.subtract(uberHeader)
-
-#------------I know that his code is somehow contains duplicate code, but for readablity purposes I will keep it as it is
-
-# remove the header from Taxi File
-taxiHeader = taxiFile.filter(lambda line: "Pickup_time" in line)
-taxiFileWithNoHeader = taxiFile.subtract(taxiHeader)
+uberFile = sc.textFile("/uber_clean_sample.csv")
+taxiFile = sc.textFile("/taxi_sample_clean.csv")
 
 
 #------ Note: we're mapping the pickup date to 2 because we know that the data we're parsing is like only 50% of all uber rides in NYC.
@@ -41,8 +31,8 @@ def mapper(x,value):
 	return((str(date.year) + "-" + str(date.month),x[2]),value)
 
 # for each line in the Uber file, this line will map the pickup_date to tuple, check the mapper function for details about the tuple.
-uber_temp = uberFileWithNoHeader.map(lambda line: line.split(",")).map(lambda x : mapper(x,2))
-taxi_temp = taxiFileWithNoHeader.map(lambda line: line.split(",")).map(lambda x : mapper(x,1))
+uber_temp = uberFile.map(lambda line: line.split(",")).map(lambda x : mapper(x,2))
+taxi_temp = taxiFile.map(lambda line: line.split(",")).map(lambda x : mapper(x,1))
 
 # reduce by key to get the total number of rides in NYC in a month
 uber_temp= uber_temp.reduceByKey(add)
