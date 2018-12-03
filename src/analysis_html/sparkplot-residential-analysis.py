@@ -98,32 +98,32 @@ graph(taxi_visu,len(taxi_visu),'M','Monthly count per borough for taxi','2014-04
 
 #------Uber Analysis
 
-# read the csv file which has no header
-uberFileWithNoHeader = sc.textFile("/uber_combined.csv")
+# # read the csv file which has no header
+# uberFileWithNoHeader = sc.textFile("/uber_combined.csv")
 
-# map each entry to ((year-month, borough integer representaion),1) 
-uber_date_boro = uberFileWithNoHeader.map(lambda line: line.split(",")).map(date_boro_mapper)
+# # map each entry to ((year-month, borough integer representaion),1) 
+# uber_date_boro = uberFileWithNoHeader.map(lambda line: line.split(",")).map(date_boro_mapper)
 
-# reduce each mapped tuple by borough and year-month, then group by year-month so that we will have combined
-# data for only the months
-uber_d_b_group = uber_date_boro.reduceByKey(lambda x,y: x + y).groupBy(lambda x: x[0][0])
+# # reduce each mapped tuple by borough and year-month, then group by year-month so that we will have combined
+# # data for only the months
+# uber_d_b_group = uber_date_boro.reduceByKey(lambda x,y: x + y).groupBy(lambda x: x[0][0])
 
-# sort the tuples by time frame (there should be 6 elements here hence sorting is not an issue)
-uber_d_b_sorted_group = uber_d_b_group.sortBy(lambda x: x[0][0])
+# # sort the tuples by time frame (there should be 6 elements here hence sorting is not an issue)
+# uber_d_b_sorted_group = uber_d_b_group.sortBy(lambda x: x[0][0])
 
-# map the tuples to an array format to make the conversion to dataframe easy
-uber_d_b_sorted_group_d_f_format = uber_d_b_sorted_group.map(date_boro_aggr)
+# # map the tuples to an array format to make the conversion to dataframe easy
+# uber_d_b_sorted_group_d_f_format = uber_d_b_sorted_group.map(date_boro_aggr)
 
-# convert out RDD to dataframe for the plotting
-uber_visu_data_frame = pd.DataFrame(uber_d_b_sorted_group_d_f_format.collect(),index = [datetime.strptime(item[0], "%Y-%m") for item in uber_d_b_sorted_group.collect()])
+# # convert out RDD to dataframe for the plotting
+# uber_visu_data_frame = pd.DataFrame(uber_d_b_sorted_group_d_f_format.collect(),index = [datetime.strptime(item[0], "%Y-%m") for item in uber_d_b_sorted_group.collect()])
 
-# create the data frame for the given ranges with given frequencies
-uber_datetime_index = pd.date_range('2014-04-01', periods= n_of_periods, freq='MS')
-uber_visu = pd.DataFrame(index=uber_datetime_index)
-# add the values of the RDD to the dataframe and fill zero in empty space 
-uber_visu = uber_visu.add(uber_visu_data_frame, fill_value = 0).fillna(0)
-# print the output to stdout to make sure everything is as expected
-pprint(uber_visu)
+# # create the data frame for the given ranges with given frequencies
+# uber_datetime_index = pd.date_range('2014-04-01', periods= n_of_periods, freq='MS')
+# uber_visu = pd.DataFrame(index=uber_datetime_index)
+# # add the values of the RDD to the dataframe and fill zero in empty space 
+# uber_visu = uber_visu.add(uber_visu_data_frame, fill_value = 0).fillna(0)
+# # print the output to stdout to make sure everything is as expected
+# pprint(uber_visu)
 
-# create the html file for visualization 
-graph(uber_visu,len(uber_visu),'M','Monthly count per borough for uber','2014-04')
+# # create the html file for visualization 
+# graph(uber_visu,len(uber_visu),'M','Monthly count per borough for uber','2014-04')

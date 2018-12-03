@@ -62,7 +62,7 @@ def date_boro_mapper(x):
 
 def date_boro_aggr(x):
     """
-    convert the [ [(time,borough),count],[(time,borough),count],[(time,borough),count],[(time,borough),count],[(time,borough),count]] where time is the same for all the entries of this array and boroughs are distinct
+    convert the [ [(time,borough),count],[(time,borough),count],[(time,borough),count],[(time,borough),count],[(time,borough),count]] where time is the same for all the entries of this array since we do groupb by before this is called and boroughs are distinct
     to [list of aggregated borough counts] (we will have six versions of this each representing one time frame)
     """
     temp = [0,0,0,0,0]

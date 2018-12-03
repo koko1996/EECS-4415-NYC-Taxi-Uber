@@ -25,14 +25,14 @@ sqlContext = SQLContext (sc)
 
 #---------------preping the weather data
 #reading 
-weatherFile = sc.textFile("file:///app/nyc_cleanData_2015-16.csv")
+weatherFile = sc.textFile("/nyc_cleanData_2015-16.csv")
 # This will map each day to it's weather state
 weather_temp = weatherFile.map(lambda line: line.split(",")).map(lambda x : (x[0],x[2]))
 # since it will be used multiple times
 weather_temp.cache()
 
 #------------Uber-------------------
-uberFile = sc.textFile("file:///app/uber_combined.csv")
+uberFile = sc.textFile("/uber_combined.csv")
 
 # for each line in the Uber file, this line will map the pickup_date to tuple, check the mapper function for details about the tuple.
 #------ Note: we're mapping the pickup date to 2 because we know that the data we're parsing is like only 50% of all uber rides in NYC.
@@ -82,17 +82,17 @@ uber_temp_2014=uber_temp_2014.map(lambda x: (x[0],x[1]/NumberOfdaysForEachWeathe
 print("Number of uber rides weather status 2015")
 print(sorted(uber_temp_2015.collect()))
 
-uber_temp_2015.saveAsTextFile("file:///app/Uber_weather2015_processed")
+uber_temp_2015.saveAsTextFile("/Uber_weather2015_processed")
 
 print("Number of uber rides weather status 2014")
 print(sorted(uber_temp_2014.collect()))
 
-uber_temp_2014.saveAsTextFile("file:///app/Uber_weather2014_processed")
+uber_temp_2014.saveAsTextFile("/Uber_weather2014_processed")
 
 
 #------------taxi-------------------
 
-taxiFile = sc.textFile("file:///app/taxi_combined.csv")
+taxiFile = sc.textFile("/taxi_combined.csv")
 
 # for each line in the Uber file, this line will map the pickup_date to tuple, check the mapper function for details about the tuple.
 taxi_temp = taxiFile.map(lambda line: line.split(",")).map(lambda x : mapper(x,1))
@@ -145,9 +145,9 @@ taxi_temp_2014=taxi_temp_2014.map(lambda x: (x[0],x[1]/NumberOfdaysForEachWeathe
 print("Number of taxi rides weather status 2015")
 print(sorted(taxi_temp_2015.collect()))
 
-taxi_temp_2015.saveAsTextFile("file:///app/Taxi_weather2015_processed")
+taxi_temp_2015.saveAsTextFile("/Taxi_weather2015_processed")
 
 print("Number of taxi rides weather status 2014")
 print(sorted(taxi_temp_2014.collect()))
 
-taxi_temp_2014.saveAsTextFile("file:///app/Taxi_weather2014_processed")
+taxi_temp_2014.saveAsTextFile("/Taxi_weather2014_processed")

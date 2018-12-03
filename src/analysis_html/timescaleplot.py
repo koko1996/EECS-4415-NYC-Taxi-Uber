@@ -19,19 +19,9 @@ def graph(data_frame,n_periods,freq,name,start_day):
     saves the map
     out : None
     """
-    #f = folium.element.Figure()
-    #f.html.add_child(folium.element.Element("<h1>"+ name+"</h1>"))
-    #m : folium map ojbect that has start point at newyork.a
     m = folium.Map(location=[40.718, -73.98], zoom_start=10)
     folium.TileLayer('cartodbpositron').add_to(m)
-    #print(data_df)
-    #df['id'] = pandas.to_numeric(df['id'])
-    #df['count'] = pandas.to_numeric(df['count'])
 
-    #create index for the time
-    # num_of_periods = number of days we sample  * 4
-    # for now i set it to whatever the testing dataframe is
-    # freq = Frequency of sampling
     datetime_index = pd.date_range(start_day, periods= n_periods , freq=freq)
     dt_index = datetime_index.astype(int).astype('U10')
     styledata = {}
@@ -83,18 +73,19 @@ def graph(data_frame,n_periods,freq,name,start_day):
     colormap.caption = 'Ride count in New York boroughs'
     colormap.add_to(m)
     m.save(name+".html")
+
 #function for normalizing the opacity
 def norm(x):
     return (x - x.min()) / (x.max() - x.min())
 
 def main():
-    #data = input data for each borough[0:4] i have aggregated data for every 6 hours
     data = np.array([[0.01,0.1,0.09,0.75,0.05] ,[0.1,0.09,0.75,0.05,0.01]])
     #dataframe that will be used for plotting
     data_df = pd.DataFrame(data)
     print("testing if graph plot function is working\n result plot should be in Test-Result.html")
 
     graph(data_df,2,'6H',"Test-Result",'2014-1-1')
+
 if __name__ == "__main__":
 
     main()
