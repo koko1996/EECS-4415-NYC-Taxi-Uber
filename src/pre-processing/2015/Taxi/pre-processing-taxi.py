@@ -19,8 +19,8 @@ lookUpData = { "Manhattan":"Manhattan" ,"Staten Island":"Staten Island", "Queens
 # open the Taxi data
 taxiData = csv.DictReader(open(args.TaxiFile), delimiter=',')
 
-# print the header of the output csv
-print("Pickup_year,Pickup_time,Pickup_borough")
+# The header of the output csv is
+# Pickup_year,Pickup_time,Pickup_borough
 
 # go through the input
 for row in taxiData:
@@ -39,7 +39,7 @@ for row in taxiData:
 
                 # convert lat and long to borough
                 # reverse_geocoder is little inconsistent with the values that it returnes, every borough except Queens is under data["name"] but queens is under data["admin2"] so It will first check if data["name"] is in the dictionary hence not Queens and if not then it will check if data["admin2"] is in the dictionary hence it maps to Queens
-                data = rg.search((pickUpLat,pickUpLong),verbose=False)[0]
+                data = rg.search((pickUpLat,pickUpLong),verbose=False,mode=1)[0]
                 # check if the name field in the returned data matches any of the borough names we have in the lookup dictionary
                 borough=lookUpData.get(data["name"],"Unknown")
                 # if the name filed does not match the borough names we have in the lookup dictionary
