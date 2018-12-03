@@ -15,10 +15,6 @@ sc = SparkContext(conf=conf)
 sc.setLogLevel("ERROR")
 # Create an sql context so that we can query data files in sql like syntax
 sqlContext = SQLContext (sc)
-# read the csv file
-uberFile = sc.textFile("/uber_clean_sample.csv")
-taxiFile = sc.textFile("/taxi_sample_clean.csv")
-
 
 #------ Note: we're mapping the pickup date to 2 because we know that the data we're parsing is like only 50% of all uber rides in NYC.
 
@@ -30,20 +26,34 @@ def mapper(x,value):
 	# extract the year and the month and map them to 2
 	return(str(date.year) + "-" + str(date.month),value)
 
+# read the csv file
+uberFile = sc.textFile("/uber_combined.csv")
+
 # for each line in the Uber file, this line will map the pickup_date to 2, where the pickup date only contains the month and the year.
 uber_temp = uberFile.map(lambda line: line.split(",")).map(lambda x : mapper(x,2))
-taxi_temp = taxiFile.map(lambda line: line.split(",")).map(lambda x : mapper(x,1))
 
 # reduce by key to get the total number of rides in NYC in a month
-uber_temp= uber_temp.reduceByKey(add)
-taxi_temp= taxi_temp.reduceByKey(add)
+uber_temp= uber_temp.reduceByKey(add).sortBy(lambda a: a[0])
 
 # remove this line before submitting the code.
 print("Number of uber rides per month")
 print(uber_temp.collect())
+uber_temp.saveAsTextFile("/uber_economics_processed")
+
+
+# read the csv file
+taxiFile = sc.textFile("/taxi_combined.csv")
+
+# for each line in the Uber file, this line will map the pickup_date to 2, where the pickup date only contains the month and the year.
+taxi_temp = taxiFile.map(lambda line: line.split(",")).map(lambda x : mapper(x,1))
+
+# reduce by key to get the total number of rides in NYC in a month
+taxi_temp= taxi_temp.reduceByKey(add).sortBy(lambda a: a[0])
 
 print("Number of taxi rides per month")
 print(taxi_temp.collect())
+taxi_temp.saveAsTextFile("/taxi_economics_processed")
+
 
 
 

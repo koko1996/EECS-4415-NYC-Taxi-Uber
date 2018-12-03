@@ -6,6 +6,7 @@ import pandas as pd
 from folium.plugins import TimeSliderChoropleth
 from pprint import pprint
 from branca.colormap import linear
+
 def graph(data_frame,n_periods,freq,name,start_day):
     """
     input : data_frame :: pandas data_frame of data, n_periods :: int, freq :: string, name :: string, start_day :: string
@@ -62,7 +63,7 @@ def graph(data_frame,n_periods,freq,name,start_day):
     #and normalize the opacity
     for country, data in styledata.items():
         data['color'] = data['color'].apply(cmap)
-        data['opacity'] = norm(data['opacity'])
+        data['opacity'] = data['opacity']
 
     styledict = {
         str(borough): data.to_dict(orient='index') for

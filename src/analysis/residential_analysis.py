@@ -16,8 +16,8 @@ sc.setLogLevel("ERROR")
 # Create an sql context so that we can query data files in sql like syntax
 sqlContext = SQLContext (sc)
 # read the csv file
-uberFile = sc.textFile("/uber_clean_sample.csv")
-taxiFile = sc.textFile("/taxi_sample_clean.csv")
+uberFile = sc.textFile("/uber_combined.csv")
+taxiFile = sc.textFile("/taxi_combined.csv")
 
 
 #------ Note: we're mapping the pickup date to 2 because we know that the data we're parsing is like only 50% of all uber rides in NYC.
@@ -35,15 +35,18 @@ uber_temp = uberFile.map(lambda line: line.split(",")).map(lambda x : mapper(x,2
 taxi_temp = taxiFile.map(lambda line: line.split(",")).map(lambda x : mapper(x,1))
 
 # reduce by key to get the total number of rides in NYC in a month
-uber_temp= uber_temp.reduceByKey(add)
-taxi_temp= taxi_temp.reduceByKey(add)
+uber_temp= uber_temp.reduceByKey(add).sortBy(lambda a: a[0][0]).sortBy(lambda a: a[0][1])
+taxi_temp= taxi_temp.reduceByKey(add).sortBy(lambda a: a[0][0]).sortBy(lambda a: a[0][1])
 
 # remove this line before submitting the code.
 print("Number of uber rides per month per zone")
 print(uber_temp.collect())
+uber_temp.saveAsTextFile("/uber_residential_processed")
+
 
 print("Number of taxi rides per month per zone")
 print(taxi_temp.collect())
+taxi_temp.saveAsTextFile("/taxi_residential_processed")
 
 
 

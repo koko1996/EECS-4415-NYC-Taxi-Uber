@@ -1,3 +1,4 @@
+from __future__ import print_function
 import reverse_geocoder as rg
 from datetime import datetime
 import argparse
@@ -40,7 +41,7 @@ for row in uberData:
             borough=lookUp[int(row["locationID"])]
 
             # remove the line if it is not in one of the boroughs
-            if borough != "Unknown" :
+            if borough != "Unknown" and borough != "EWR":
                 # get formatted year and date
                 pickUpYear=date.strftime("%Y-%m-%d")
                 pickUpTime=date.strftime('%H:%M:%S')

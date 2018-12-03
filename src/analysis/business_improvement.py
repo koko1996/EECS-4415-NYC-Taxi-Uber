@@ -21,7 +21,7 @@ def yearMapper(line):
 #-----------Taxi Analysis
 
 # read the Taxi file (no headers in the file), the file should be on HDFS
-taxiFile = sc.textFile("/taxi_clean_2014_2015_sample.csv")
+taxiFile = sc.textFile("/taxi_combined.csv")
 
 # cache the data because it is going to be used multiple times
 taxiFile.cache()
@@ -46,11 +46,10 @@ def taxiLineMapper(line):
     return ((pickUpYear,words[2]),1.0/count)
 
 
-# data = sc.textFile("/taxi_sample_clean.csv").map(lineMapper).reduceByKey(lambda x,y: x + y).sortBy(lambda a: a[0][1]).sortBy(lambda a: a[0][0]).sortBy(lambda a: a[0][2]).saveAsTextFile("/taxi_processed")
-
 # Calculate the percentage of Taxi Rides in each borough for each year divided by the total number of Taxi Rides in that year in all the boroughs of New York City
 taxiData = taxiFile.map(taxiLineMapper).reduceByKey(lambda x,y: x + y).sortBy(lambda a: a[0][0]).sortBy(lambda a: a[0][1])
 print ( taxiData.collect())
+taxiData.saveAsTextFile("/taxi_bussiness_processed")
 
 # Drop the taxi data from memory to speed up the other calculations
 taxiFile.unpersist()
@@ -58,7 +57,7 @@ taxiFile.unpersist()
 #-----------Uber Analysis
 
 # read the Uber file (no headers in the file), the file should be on HDFS
-uberData = sc.textFile("/uber_clean_2014_2015_sample.csv")
+uberData = sc.textFile("/uber_combined.csv")
 # Cache the data because it is going to be used multiple times
 uberData.cache()
 
@@ -85,5 +84,6 @@ def uberLineMapper(line):
 # Calculate the percentage of Uber Rides in each borough for each year divided by the total number of Uber Rides in that year in all the boroughs of New York City
 uberData = uberData.map(uberLineMapper).reduceByKey(lambda x,y: x + y).sortBy(lambda a: a[0]).sortBy(lambda a: a[0][1])
 print ( uberData.collect())
+uberData.saveAsTextFile("/uber_bussiness_processed")
 
 # Droping the Uber data from memory is not necessary at this point since we are done

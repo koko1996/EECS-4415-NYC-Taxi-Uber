@@ -17,16 +17,16 @@ def lineMapper(line):
 
 #-----------Taxi Analysis
 
-# data = sc.textFile("/taxi_sample_clean.csv").map(lineMapper).reduceByKey(lambda x,y: x + y).sortBy(lambda a: a[0][1]).sortBy(lambda a: a[0][0]).sortBy(lambda a: a[0][2]).saveAsTextFile("/taxi_processed")
-
 # Read the Taxi data from HDFS, Map it to (borough, 1) tuples, reduce it by key (borough) and the sort it by borough for better formatted output
-taxiData = sc.textFile("/taxi_sample_clean.csv").map(lineMapper).reduceByKey(lambda x,y: x + y).sortBy(lambda a: a[0])
+taxiData = sc.textFile("/taxi_combined.csv").map(lineMapper).reduceByKey(lambda x,y: x + y).sortBy(lambda a: a[0])
 print ( taxiData.collect())
+taxiData.saveAsTextFile("/taxi_income_processed")
 
 
 #-----------Uber Analysis
 
 
 # Read the Uber data from HDFS, Map it to (borough, 1) tuples, reduce it by key (borough) and the sort it by borough for better formatted output
-uberData = sc.textFile("/uber_clean_sample.csv").map(lineMapper).reduceByKey(lambda x,y: x + y).sortBy(lambda a: a[0])
+uberData = sc.textFile("/uber_combined.csv").map(lineMapper).reduceByKey(lambda x,y: x + y).sortBy(lambda a: a[0])
 print ( uberData.collect())
+uberData.saveAsTextFile("/uber_income_processed")
