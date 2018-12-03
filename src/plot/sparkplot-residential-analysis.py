@@ -10,6 +10,7 @@ import pandas as pd
 import numpy as np
 from timescaleplot import graph
 from dateutil.parser import parse
+from datetime import datetime
 
 
 """
@@ -40,7 +41,7 @@ def date_boro_mapper(x):
     else:
         value = 4
     date = parse(x[0])
-    return(str(date.year) + "-" + str(date.month),value)
+    return ((str(date.year) + "-" + str(date.month),value),1)
 
 def date_boro_aggr(x):
     """
@@ -49,8 +50,11 @@ def date_boro_aggr(x):
     """
     temp = [0,0,0,0,0]
     for ele in x[1]:
-        temp[int(ele[1])] += 1
+        temp[int(ele[0][1])] += int(ele[1])
     return temp
+
+n_of_periods = 3 #3 month for now
+
 
 conf = SparkConf()
 conf.setAppName("Residential_Analysis")
@@ -59,38 +63,56 @@ conf.setAppName("Residential_Analysis")
 sc = SparkContext(conf=conf)
 sc.setLogLevel("ERROR")
 
+#------Taxi Analysis
+
 # read the csv file
-uberFileWithNoHeader = sc.textFile("/uber_clean_sample.csv")
-taxiFileWithNoHeader = sc.textFile("/taxi_clean_sample.csv")
+taxiFileWithNoHeader = sc.textFile("/taxi_combined.csv")
 
 # mapp each line in the input file to (pickupYear-pickupMonth,borough)
 taxi_date_boro = taxiFileWithNoHeader.map(lambda line: line.split(",")).map(date_boro_mapper)
-uber_date_boro = uberFileWithNoHeader.map(lambda line: line.split(",")).map(date_boro_mapper)
 
 # group the mapped values by year 
-taxi_d_b_group = taxi_date_boro.groupBy(lambda x: x[0])
-uber_d_b_group = uber_date_boro.groupBy(lambda x: x[0])
+taxi_d_b_group = taxi_date_boro.reduceByKey(lambda x,y: x + y).groupBy(lambda x: x[0][0])
 
 # sort the values by year 
-taxi_d_b_sorted_group = taxi_d_b_group.sortBy(lambda x: x[0])
-uber_d_b_sorted_group = uber_d_b_group.sortBy(lambda x: x[0])
+taxi_d_b_sorted_group = taxi_d_b_group.sortBy(lambda x: x[0][0])
 
 # aggregate by month of a year by borough 
 taxi_d_b_sorted_group_d_f_format = taxi_d_b_sorted_group.map(date_boro_aggr)
-uber_d_b_sorted_group_d_f_format = uber_d_b_sorted_group.map(date_boro_aggr)
 
 #dataframe that will be used for plotting
-taxi_visu_data_frame = pd.DataFrame(taxi_d_b_sorted_group_d_f_format.collect(),index = [item[0] for item in taxi_d_b_sorted_group.collect()])
+taxi_visu_data_frame = pd.DataFrame(taxi_d_b_sorted_group_d_f_format.collect(),index = [datetime.strptime(item[0],"%Y-%m") for item in taxi_d_b_sorted_group.collect()])
+
+
+taxi_datetime_index_2014 = pd.date_range('2014-04', periods= n_of_periods, freq='M')
+taxi_datetime_index_2015 = pd.date_range('2015-04', periods= n_of_periods, freq='M')
+taxi_datetime_index_2015.reset_index(drop=True, inplace=True)
+taxi_datetime_index = pd.concat([taxi_datetime_index_2014,taxi_datetime_index_2015], axis=1)
+
+taxi_visu = pd.DataFrame(index=taxi_datetime_index)
+taxi_visu = taxi_visu.add(taxi_visu_data_frame, fill_value = 0).fillna(0)
+
+pprint(taxi_visu)
+
+graph(taxi_visu,len(taxi_visu),'M','Monthly count per borough for taxi','2014-04')
+
+
+#------Uber Analysis
+
+uberFileWithNoHeader = sc.textFile("/uber_combined.csv")
+
+uber_date_boro = uberFileWithNoHeader.map(lambda line: line.split(",")).map(date_boro_mapper)
+uber_d_b_group = uber_date_boro.reduceByKey(lambda x,y: x + y).groupBy(lambda x: x[0][0])
+uber_d_b_sorted_group = uber_d_b_group.sortBy(lambda x: x[0][0])
+uber_d_b_sorted_group_d_f_format = uber_d_b_sorted_group.map(date_boro_aggr)
 uber_visu_data_frame = pd.DataFrame(uber_d_b_sorted_group_d_f_format.collect(),index = [item[0] for item in uber_d_b_sorted_group.collect()])
 
-n_of_periods = 4 #4 month for now
-datetime_index = pd.date_range('2015-04', periods= n_of_periods, freq='M')
-taxi_visu = pd.DataFrame(index=datetime_index)
-taxi_visu = taxi_visu.add(taxi_visu_data_frame, fill_value = 0)
-taxi_visu = taxi_visu.fillna(0)
-uber_visu = pd.DataFrame(index=datetime_index)
-uber_visu = uber_visu.add(uber_visu_data_frame, fill_value = 0)
-uber_visu = uber_visu.fillna(0)
+uber_datetime_index_2014 = pd.date_range('2014-04', periods= n_of_periods, freq='M')
+uber_datetime_index_2015 = pd.date_range('2015-04', periods= n_of_periods, freq='M')
+uber_datetime_index_2015.reset_index(drop=True, inplace=True)
+uber_datetime_index = pd.concat([uber_datetime_index_2014,uber_datetime_index_2015], axis=1)
 
-graph(taxi_visu,len(taxi_visu),'M','Monthly count per borough for taxi','2015-04')
+uber_visu = pd.DataFrame(index=uber_datetime_index)
+uber_visu = uber_visu.add(uber_visu_data_frame, fill_value = 0).fillna(0)
+
 graph(uber_visu,len(uber_visu),'M','Monthly count per borough for uber','2015-04')
